@@ -55,9 +55,7 @@ const extractLinks = async (url, tag, depth) => {
 }
 
 const crawlIn = async (url, depth) => {
-  console.log("*** crawlIn depth: ", depth, " url? ", url)
   const urlLinks = await extractLinks(url, "a", depth)
-  console.log("*** crawlIn urlLinks: ", urlLinks)
   const urlImages = await extractLinks(url, "img", depth)
 
   return { links: urlLinks, images: urlImages }

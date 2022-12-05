@@ -7,9 +7,10 @@ const validUrl = require("valid-url")
 
 const { info, success, error } = require("./messaging")
 const { crawlIn } = require("./crawler")
+const { resetFile, saveFile } = require("./file")
 
 let depth = 0
-const images = { results: [] }
+let images = []
 
 const options = yargs
   .usage("Usage: -u <url> -d <number>")
@@ -37,39 +38,32 @@ if (validUrl.isUri(options.url)) {
 
 const process = async () => {
   let linksAtDepth = await crawlIn(options.url, depth)
-  images.results.push([...linksAtDepth.images])
+  images.push([...linksAtDepth.images])
 
   depth++
 
-  while (depth <= options.depth) {
-    if (linksAtDepth?.links) {
-      linksAtDepth.links?.forEach(async (link, index) => {
-        const moreLinks = await crawlIn(link.href, depth)
-        if (moreLinks?.images) {
-          images.results.push([...moreLinks.images])
+  const handleProcessing = async () => {
+    for (let i = 1; i <= options.depth; i++) {
+      let moreLinks = []
+      linksAtDepth.links?.forEach(async (link) => {
+        if (link?.href) {
+          moreLinks = await crawlIn(link.href, i)
+          images.push([...moreLinks.images])
+
+          if (images.length > 0) {
+            resetFile("results")
+            saveFile(images, "results")
+          }
+
+          if (moreLinks.length > 0) {
+            linksAtDepth = [...moreLinks]
+          }
         }
       })
-      depth++
     }
-    // console.log("*** images: final", JSON.parse(JSON.stringify(images.results)))
   }
 
-  // const handleProcessing = async () => {
-  //   for (let i = 1; i <= options.depth; i++) {
-  //     let moreLinks = []
-  //     linksAtDepth.links?.forEach(async (link) => {
-  //       if (link?.href) {
-  //         moreLinks = await crawlIn(link.href, i)
-  //         images.push([...moreLinks.images])
-
-  //         resetFile("results")
-  //         saveFile(images, "results")
-  //       }
-  //     })
-  //   }
-  // }
-
-  // console.log("*** processi ", await handleProcessing())
+  console.log("*** processing ", await handleProcessing())
 }
 
 process()
