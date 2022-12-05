@@ -42,21 +42,25 @@ const process = async () => {
 
   depth++
 
+  let paused = false
+
   const handleProcessing = async () => {
     for (let i = 1; i <= options.depth; i++) {
       let moreLinks = []
       linksAtDepth.links?.forEach(async (link) => {
         if (link?.href) {
+          paused = true
           moreLinks = await crawlIn(link.href, i)
+          paused = false
           images.push([...moreLinks.images])
 
-          if (images.length > 0) {
+          if (images?.length > 0) {
             resetFile("results")
             saveFile(images, "results")
           }
         }
       })
-      if (moreLinks?.links?.length > 0) {
+      if (moreLinks?.links?.length > 0 && paused) {
         moreLinks.images = []
         linksAtDepth = { ...moreLinks }
       }
