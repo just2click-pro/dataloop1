@@ -54,12 +54,12 @@ const process = async () => {
             resetFile("results")
             saveFile(images, "results")
           }
-
-          if (moreLinks.length > 0) {
-            linksAtDepth = [...moreLinks]
-          }
         }
       })
+      if (moreLinks?.links?.length > 0) {
+        moreLinks.images = []
+        linksAtDepth = { ...moreLinks }
+      }
     }
   }
 
